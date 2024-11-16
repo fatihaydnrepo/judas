@@ -1,33 +1,37 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
 
-namespace DemoApp;
+var builder = WebApplication.CreateBuilder(args);
 
-public class Program
+builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    public static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
-        builder.Services.AddControllers();
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+    serverOptions.ListenAnyIP(8080); // Port'u açıkça belirtiyoruz
+});
 
-        builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-        builder.Services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
-        });
+// PostgreSQL bağlantısı
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-        var app = builder.Build();
-        app.UseSwagger();
-        app.UseSwaggerUI();
-        app.MapControllers();
+// Redis bağlantısı
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+});
 
-        app.MapGet("/health", () => "Healthy!");
+var app = builder.Build();
 
-        app.Run();
-    }
-}
+app.UseSwagger();
+app.UseSwaggerUI();
+app.MapControllers();
+
+// Health check endpoint
+app.MapGet("/", () => "Welcome to Demo App!");
+app.MapGet("/health", () => "Healthy!");
+
+app.Run();

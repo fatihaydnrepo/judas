@@ -1,11 +1,19 @@
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
-networking:
-  apiServerAddress: "192.168.1.50"
-  apiServerPort: 42105
 nodes:
 - role: control-plane
+  extraMounts:
+  - hostPath: /tmp/postgresql-data
+    containerPath: /bitnami/postgresql
   extraPortMappings:
-  - containerPort: 80
-    hostPort: 8081
-- role: worker
+  - containerPort: 6443
+    hostPort: 6444
+    protocol: TCP
+  - containerPort: 30432
+    hostPort: 30432
+  - containerPort: 32379
+    hostPort: 32379
+  - containerPort: 32001
+    hostPort: 32001
+  - containerPort: 30080
+    hostPort: 30080

@@ -1,4 +1,4 @@
 apiVersion: v2
 name: app
-description: Demo .NET application
+description: Demo application
 version: 0.1.0
