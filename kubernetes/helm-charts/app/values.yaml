@@ -1,0 +1,9 @@
+replicaCount: 2
+image:
+ repository: demo-app
+ tag: latest
+ pullPolicy: Never
+service:
+ type: NodePort
+ port: 80
+ nodePort: 30090

@@ -1,0 +1,8 @@
+apiVersion: v2
+name: postgres
+description: PostgreSQL for demo application
+version: 0.1.0
+dependencies:
+ - name: postgresql
+   version: "12.5.7"
+   repository: https://charts.bitnami.com/bitnami

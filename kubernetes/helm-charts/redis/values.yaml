@@ -1,0 +1,8 @@
+redis:
+ auth:
+   password: devops
+ master:
+   service:
+     type: NodePort
+     nodePorts:
+       redis: "32379"

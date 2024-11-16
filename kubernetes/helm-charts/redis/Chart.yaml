@@ -1,0 +1,8 @@
+apiVersion: v2
+name: redis
+description: Redis for demo application
+version: 0.1.0
+dependencies:
+ - name: redis
+   version: "17.11.3"
+   repository: https://charts.bitnami.com/bitnami
