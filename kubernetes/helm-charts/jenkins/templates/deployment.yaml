@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    {{- include "jenkins.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "jenkins.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "jenkins.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        runAsUser: 0
+        fsGroup: 0
+      containers:
+      - name: jenkins
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 8080
+          name: httpport
+        - containerPort: 50000
+          name: jnlpport
+        securityContext:
+          allowPrivilegeEscalation: true
+        volumeMounts:
+        - name: jenkins-data
+          mountPath: /var/jenkins_home
+      volumes:
+      - name: jenkins-data
+        emptyDir: {}

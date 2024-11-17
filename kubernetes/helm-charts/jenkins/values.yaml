@@ -1,31 +1,10 @@
-controller:
-  image: "jenkins/jenkins"
-  tag: "lts-jdk11"
-  adminUser: "admin"
-  adminPassword: "devops"
-
-  initContainerEnv:
-  - name: JENKINS_HOME
-    value: /var/jenkins_home
-
-  containerEnv:
-  - name: JENKINS_OPTS
-    value: "--argumentsRealm.roles.user=admin --argumentsRealm.passwd.admin=devops"
-  - name: JAVA_OPTS
-    value: "-Djenkins.install.runSetupWizard=false"
-
-  serviceType: NodePort
-  servicePort: 8080
-  targetPort: 8080
+replicaCount: 1
+image:
+  repository: jenkins/jenkins
+  tag: 2.414.2-lts
+  pullPolicy: IfNotPresent
+service:
+  type: NodePort
+  port: 8080
   nodePort: 32001
-
-persistence:
-  enabled: true
-  size: 8Gi
-  storageClass: "standard"
-
-serviceAccount:
-  create: true
-
-rbac:
-  create: true
+  agentPort: 50000

@@ -1,19 +1,11 @@
-output "kubeconfig" {
-  value = kind_cluster.default.kubeconfig
+output "cluster_name" {
+  value = kind_cluster.default.name
 }
 
-output "endpoint" {
-  value = kind_cluster.default.endpoint
+output "kubeconfig_path" {
+  value = "~/.kube/config"
 }
 
-output "client_certificate" {
-  value = kind_cluster.default.client_certificate
-}
-
-output "client_key" {
-  value = kind_cluster.default.client_key
-}
-
-output "cluster_ca_certificate" {
-  value = kind_cluster.default.cluster_ca_certificate
+output "api_endpoint" {
+  value = "https://${var.host_ip}:${var.api_port}"
 }

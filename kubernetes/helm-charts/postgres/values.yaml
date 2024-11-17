@@ -1,25 +1,11 @@
-postgresql:
-  auth:
-    postgresPassword: devops
-    username: devops
-    password: devops
-    database: containers
-  primary:
-    service:
-      type: NodePort
-      nodePorts:
-        postgresql: "30432"
-    persistence:
-      enabled: true
-      size: 8Gi
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "250m"
-      limits:
-        memory: "512Mi"
-        cpu: "500m"
-    podSecurityContext:
-      enabled: false
-    containerSecurityContext:
-      enabled: false
+auth:
+  existingSecret: "postgres-postgresql"
+  secretKeys:
+    adminPasswordKey: postgres-password
+  database: "containers"
+
+primary:
+  service:
+    type: NodePort
+    nodePorts:
+      postgresql: 30432

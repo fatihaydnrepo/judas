@@ -2,11 +2,14 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy csproj and restore dependencies
-COPY *.csproj ./
+COPY *.csproj .
 RUN dotnet restore
 
+# Install EF Core tools
+RUN dotnet tool install --global dotnet-ef
+
 # Copy everything else and build
-COPY . ./
+COPY . .
 RUN dotnet publish -c Release -o /app
 
 # Build runtime image

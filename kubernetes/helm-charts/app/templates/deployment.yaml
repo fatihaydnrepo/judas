@@ -1,31 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}
+  name: app
+  labels:
+    app: app
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
+      app: app
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}
+        app: app
     spec:
       containers:
-      - name: {{ .Release.Name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        ports:
-        - containerPort: 8080
-        env:
-        - name: ConnectionStrings__DefaultConnection
-          valueFrom:
-            secretKeyRef:
-              name: app-secret
-              key: DefaultConnection
-        - name: ConnectionStrings__RedisConnection
-          valueFrom:
-            secretKeyRef:
-              name: app-secret
-              key: RedisConnection
+        - name: app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DefaultConnection
+            - name: ConnectionStrings__RedisConnection
+              valueFrom:
+                secretKeyRef:
+                  name: redis
+                  key: redis-password

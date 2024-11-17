@@ -1,10 +1,23 @@
-replicaCount: 2
+replicaCount: 1
+
 image:
   repository: app
   tag: latest
   pullPolicy: Never
+
 service:
   type: NodePort
   port: 8080
-  targetPort: 8080
   nodePort: 30080
+
+env:
+  - name: DefaultConnection
+    valueFrom:
+      secretKeyRef:
+        name: app-secret
+        key: DefaultConnection
+  - name: RedisConnection
+    valueFrom:
+      secretKeyRef:
+        name: app-secret
+        key: RedisConnection

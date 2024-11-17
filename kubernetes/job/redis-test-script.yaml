@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: redis-test
+  namespace: demo
+spec:
+  schedule: "*/5 * * * *" # Her 5 dakikada bir çalışır (Test için)
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: redis-tester
+            image: bitnami/redis:latest
+            env:
+              - name: REDIS_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: redis
+                    key: redis-password # Redis şifresi Secret'tan alınır
+            command:
+              - /bin/bash
+              - -c
+              - |
+                echo "Starting Redis connection test..." && \
+                redis-cli -h redis-master -a "$REDIS_PASSWORD" PING && \
+                redis-cli -h redis-master -a "$REDIS_PASSWORD" SET test-key "Hello Redis" && \
+                redis-cli -h redis-master -a "$REDIS_PASSWORD" GET test-key && \
+                redis-cli -h redis-master -a "$REDIS_PASSWORD" DEL test-key && \
+                echo "Redis connection test completed successfully!" || \
+                echo "Redis connection test failed" >&2
+          restartPolicy: Never
