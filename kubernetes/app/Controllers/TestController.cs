@@ -1,37 +1,33 @@
-using Microsoft.AspNetCore.Mvc;
-
-namespace DemoApp.Controllers;
-
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class TestController : ControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly ILogger<TestController> _logger;
 
-    public TestController(AppDbContext context, ILogger<TestController> logger)
+    public TestController(AppDbContext context)
     {
         _context = context;
-        _logger = logger;
     }
 
-    [HttpGet]
-    public IActionResult Get()
+    // POST: /api/test/save
+    [HttpPost("save")]
+    public IActionResult SaveData([FromBody] InputModel input)
     {
-        return Ok(new { message = "API is working!" });
-    }
+        if (input == null)
+        {
+            return BadRequest(new { Mesaj = "Geçersiz veri." });
+        }
 
-    [HttpGet("db")]
-    public IActionResult TestDb()
-    {
-        try
+        // Veriyi PostgreSQL'e kaydetme
+        var newEntity = new MyEntity
         {
-            _context.Database.CanConnect();
-            return Ok(new { message = "Database connection successful!" });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { message = "Database connection failed!", error = ex.Message });
-        }
+            Name = input.Name,
+            Age = input.Age
+        };
+
+        _context.MyEntities.Add(newEntity);
+        _context.SaveChanges();
+
+        return Ok(new { Mesaj = "Veri başarıyla kaydedildi.", Veri = newEntity });
     }
 }
