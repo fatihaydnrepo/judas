@@ -39,13 +39,7 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.
 sudo apt-get update
 sudo apt-get install -y helm
 
-# Kind Installation
-echo "🔧 Installing Kind..."
-curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
-chmod +x ./kind
-sudo mv ./kind /usr/local/bin/kind
-
-# Kubectl Installation
+Kubectl Installation
 echo "☸️ Installing Kubectl..."
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
@@ -53,12 +47,6 @@ echo "$(cat kubectl.sha256) kubectl" | sha256sum --check
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 rm kubectl kubectl.sha256
 
-# Installing PostgreSQL and Redis clients
-echo "🐘 Installing PostgreSQL client..."
-sudo apt-get install -y postgresql-client
-
-echo "🔴 Installing Redis client..."
-sudo apt-get install -y redis-tools
 
 # Print versions for verification
 echo -e "\n📌 Verifying installations..."
@@ -66,9 +54,6 @@ echo "Git version: $(git --version)"
 echo "Docker version: $(docker --version)"
 echo "Terraform version: $(terraform --version)"
 echo "Helm version: $(helm version)"
-echo "Kind version: $(kind version)"
 echo "Kubectl version: $(kubectl version --client)"
-echo "PostgreSQL client version: $(psql --version)"
-echo "Redis client version: $(redis-cli --version)"
 
 echo "✅ All tools have been installed successfully!"
