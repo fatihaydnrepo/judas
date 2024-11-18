@@ -1,40 +1,41 @@
 locals {
-  db_password = "gDyOzQIC5L"
-  redis_password = "gDyOzQIC5L"
-  app_secret = "gDyOzQIC5L"
+  # Base64 encoded şifreyi decode et
+  encoded_password = "Z0R5T3pRSUM1TA=="
+  decoded_password = base64decode(local.encoded_password)
+
+  # Connection stringleri decode edilmiş şifre ile oluştur
+  db_connection = "Host=postgres-postgresql.demo.svc.cluster.local;Database=containers;Username=postgres;Password=Z0R5T3pRSUM1TA=="
+  redis_connection = "redis-master.demo.svc.cluster.local:6379,password=Z0R5T3pRSUM1TA=="
 }
 
-# PostgreSQL secret
 resource "kubernetes_secret" "postgres" {
   metadata {
     name      = "postgres-postgresql"
     namespace = "demo"
   }
   data = {
-    "postgres-password" = base64encode(local.db_password)
+    "postgres-password" = local.encoded_password  # Zaten encoded
   }
 }
 
-# Redis secret
 resource "kubernetes_secret" "redis" {
   metadata {
     name      = "redis"
     namespace = "demo"
   }
   data = {
-    "redis-password" = base64encode(local.redis_password)
+    "redis-password" = local.encoded_password  # Zaten encoded
   }
 }
 
-# App secret
-resource "kubernetes_secret" "app_secrets" {
+resource "kubernetes_secret" "app_secret" {
   metadata {
     name      = "app-secret"
     namespace = "demo"
   }
   data = {
-    "APP_SECRET" = base64encode(local.app_secret)
-    "DefaultConnection" = base64encode("Host=postgres-postgresql.demo.svc.cluster.local;Database=containers;Username=postgres;Password=${local.db_password}")
-    "RedisConnection"  = base64encode("redis-master.demo.svc.cluster.local:6379,password=${local.redis_password}")
+    "DefaultConnection" = base64encode(local.db_connection)
+    "RedisConnection"  = base64encode(local.redis_connection)
+    "app-secret" = local.encoded_password  # Zaten encoded
   }
 }

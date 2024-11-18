@@ -1,23 +1,34 @@
 replicaCount: 1
-
 image:
   repository: app
   tag: latest
   pullPolicy: Never
-
 service:
   type: NodePort
   port: 8080
   nodePort: 30080
-
 env:
-  - name: DefaultConnection
+  # PostgreSQL Environment Variables
+  - name: POSTGRES_HOST
+    value: "postgres-postgresql.demo.svc.cluster.local"
+  - name: POSTGRES_PORT
+    value: "5432"
+  - name: POSTGRES_DB
+    value: "containers"
+  - name: POSTGRES_USER
+    value: "postgres"
+  - name: POSTGRES_PASSWORD
     valueFrom:
       secretKeyRef:
-        name: app-secret
-        key: DefaultConnection
-  - name: RedisConnection
+        name: postgres-postgresql
+        key: postgres-password
+  # Redis Environment Variables
+  - name: REDIS_HOST
+    value: "redis-master.demo.svc.cluster.local"
+  - name: REDIS_PORT
+    value: "6379"
+  - name: REDIS_PASSWORD
     valueFrom:
       secretKeyRef:
-        name: app-secret
-        key: RedisConnection
+        name: redis
+        key: redis-password

@@ -1,35 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app
+  name: {{ include "app.fullname" . }}
   labels:
-    app: app
+    {{- include "app.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: app
+      {{- include "app.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: app
+        {{- include "app.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-        - name: app
+        - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
+          {{- if .Values.env }}
           env:
-            - name: ConnectionStrings__DefaultConnection
-              valueFrom:
-                secretKeyRef:
-                  name: app-secret
-                  key: DefaultConnection
-            - name: ConnectionStrings__RedisConnection
-              valueFrom:
-                secretKeyRef:
-                  name: redis
-                  key: redis-password
+            {{- toYaml .Values.env | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
