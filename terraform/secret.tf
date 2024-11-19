@@ -3,7 +3,6 @@ locals {
   encoded_password = "Z0R5T3pRSUM1TA=="
   decoded_password = base64decode(local.encoded_password)
 
-  # Connection stringleri decode edilmiş şifre ile oluştur
   db_connection = "Host=postgres-postgresql.demo.svc.cluster.local;Database=containers;Username=postgres;Password=Z0R5T3pRSUM1TA=="
   redis_connection = "redis-master.demo.svc.cluster.local:6379,password=Z0R5T3pRSUM1TA=="
 }
@@ -14,7 +13,7 @@ resource "kubernetes_secret" "postgres" {
     namespace = "demo"
   }
   data = {
-    "postgres-password" = local.encoded_password  # Zaten encoded
+    "postgres-password" = local.encoded_password  
   }
 }
 
