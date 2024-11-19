@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Renk tanımlamaları
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -29,6 +28,31 @@ fi
 
 # Temizlik fonksiyonu
 cleanup() {
+    log "Sistem temizliği yapılıyor..."
+    
+    # Kind cluster'ı kontrol et ve sil
+    if kind get clusters | grep -q "test-cluster"; then
+        log "Eski cluster siliniyor..."
+        kind delete clusters test-cluster
+    fi
+    
+    # Docker temizliği
+    log "Docker temizliği yapılıyor..."
+    docker system prune -af --volumes
+    
+    # Terraform temizliği
+    log "Terraform state temizleniyor..."
+    cd $TERRAFORM_DIR
+    rm -f terraform.tfstate*
+    rm -f .terraform.lock.hcl
+    rm -rf .terraform
+    cd -
+    
+    log "Temizlik tamamlandı"
+}
+
+# Ana script başlangıcında çağır
+cleanup {
     log "Sistem temizliği yapılıyor..."
     
     # Kind cluster'ı kontrol et ve sil
