@@ -24,7 +24,7 @@ resource "kubernetes_secret" "redis" {
     namespace = "demo"
   }
   data = {
-    "redis-password" = local.encoded_password  # Zaten encoded
+    "redis-password" = local.encoded_password 
   }
 }
 
