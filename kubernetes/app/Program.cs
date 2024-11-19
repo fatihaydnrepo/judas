@@ -54,7 +54,7 @@ using (var scope = app.Services.CreateScope())
         throw;
     }
 }
-
+app.MapGet("/", () => Results.Redirect("/swagger/index.html"));
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapControllers();
