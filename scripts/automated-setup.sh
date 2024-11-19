@@ -43,17 +43,26 @@ cleanup() {
     if kind get clusters | grep -q "test-cluster"; then
         log "Eski cluster siliniyor..."
         kind delete clusters test-cluster
+        kind delete clusters --all 2>/dev/null || true
     fi
-    
+    # Kubeconfig temizliği
+    log "Kubeconfig temizliği yapılıyor..."
+    rm -f ~/.kube/config 2>/dev/null || true
     # Docker temizliği
     log "Docker temizliği yapılıyor..."
     docker system prune -af --volumes
+    log "Docker servisi yeniden başlatılıyor..."
+    sudo systemctl restart docker
+    log "Docker socket izinleri ayarlanıyor..."
+    sudo chmod 666 /var/run/docker.sock
     
     # Terraform temizliği
     log "Terraform state temizleniyor..."
     cd $TERRAFORM_DIR
     rm -f terraform.tfstate*
     rm -f .terraform.lock.hcl
+    rm -rf .terraform* 2>/dev/null || true
+    rm -f terraform.tfstate* 2>/dev/null || true
     rm -rf .terraform
     cd -
     
