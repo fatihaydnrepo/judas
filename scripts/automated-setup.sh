@@ -60,31 +60,6 @@ cleanup() {
     log "Temizlik tamamlandı"
 }
 
-# Ana script başlangıcında çağır
-cleanup() {
-    log "Sistem temizliği yapılıyor..."
-    
-    # Kind cluster'ı kontrol et ve sil
-    if kind get clusters | grep -q "test-cluster"; then
-        log "Eski cluster siliniyor..."
-        kind delete clusters test-cluster
-    fi
-    
-    # Docker temizliği
-    log "Docker temizliği yapılıyor..."
-    docker system prune -af --volumes
-    
-    # Terraform temizliği
-    log "Terraform state temizleniyor..."
-    rm -f terraform.tfstate*
-    rm -f .terraform.lock.hcl
-    
-    log "Temizlik tamamlandı"
-}
-
-# Ana script başlangıcında çağır
-cleanup
-
 # IP adresini alma fonksiyonu
 get_host_ip() {
     IP=$(ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '127.0.0.1' | head -n 1)
