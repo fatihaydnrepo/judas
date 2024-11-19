@@ -26,6 +26,15 @@ else
     log "${BLUE}UFW sisteminizde yüklü değil${NC}"
 fi
 
+log "Script dosyaları çalıştırılabilir yapılıyor..."
+chmod +x $SCRIPTS_DIR/get_ip.sh
+chmod +x $SCRIPTS_DIR/install-dependencies.sh
+chmod +x $SCRIPTS_DIR/postgresql-test.sh
+chmod +x $SCRIPTS_DIR/redis-test.sh
+chmod +x $SCRIPTS_DIR/setup.sh
+chmod +x $SCRIPTS_DIR/update-kubeconfig.sh
+chmod +x $SCRIPTS_DIR/automated-setup.sh
+
 # Temizlik fonksiyonu
 cleanup() {
     log "Sistem temizliği yapılıyor..."
