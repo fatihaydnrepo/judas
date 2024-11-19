@@ -61,7 +61,7 @@ cleanup() {
 }
 
 # Ana script başlangıcında çağır
-cleanup {
+cleanup() {
     log "Sistem temizliği yapılıyor..."
     
     # Kind cluster'ı kontrol et ve sil
