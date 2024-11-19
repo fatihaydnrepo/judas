@@ -11,11 +11,7 @@ sudo apt-get install -y git
 
 # Kind CLI'nin indirilmesi
 curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
-
-# Çalıştırılabilir hale getirme
 chmod +x ./kind
-
-# Kind CLI'nin sistem PATH'ine taşınması
 sudo mv ./kind /usr/local/bin/kind
 
 # Doğrulama
