@@ -1,11 +1,17 @@
 variable "host_ip" {
-  description = "Host IP address for kubeconfig"
+  description = "Host machine IP address"
   type        = string
-  default     = "192.168.1.50"
+  default     = "0.0.0.0"  # Default değer, script ile güncellenecek
 }
 
 variable "api_port" {
-  description = "API server port"
+  description = "Kubernetes API server port"
   type        = number
   default     = 6444
+}
+
+variable "cluster_name" {
+  description = "Kind cluster name"
+  type        = string
+  default     = "test-cluster"
 }

@@ -5,7 +5,22 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
-NC='\033[0m' # No Color
+NC='\033[0m'
+
+# Dizin yapısı
+BASE_DIR="/home/devops/k8s"
+SCRIPTS_DIR="$BASE_DIR/scripts"
+TERRAFORM_DIR="$BASE_DIR/terraform"
+
+# IP adresini alma fonksiyonu
+get_host_ip() {
+    IP=$(ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '127.0.0.1' | head -n 1)
+    if [ -z "$IP" ]; then
+        log "${RED}IP adresi bulunamadı!${NC}"
+        exit 1
+    fi
+    echo "$IP"
+}
 
 # Log fonksiyonu
 log() {
@@ -32,17 +47,28 @@ check_system_pods() {
     echo "$all_running"
 }
 
-# Ana dizin kontrolleri
-BASE_DIR="/home/devops/k8s"
-SCRIPTS_DIR="$BASE_DIR/scripts"
-TERRAFORM_DIR="$BASE_DIR/terraform"
+# Terraform değişkenlerini güncelle
+update_terraform_vars() {
+    local ip=$1
+    cat > "$TERRAFORM_DIR/terraform.tfvars" <<EOF
+host_ip = "${ip}"
+api_port = 6444
+cluster_name = "test-cluster"
+EOF
+    log "Terraform değişkenleri güncellendi"
+}
 
+# Ana dizin kontrolü
 if [ ! -d "$SCRIPTS_DIR" ] || [ ! -d "$TERRAFORM_DIR" ]; then
     log "${RED}HATA: Gerekli dizinler bulunamadı. Lütfen dizin yapısını kontrol edin.${NC}"
     exit 1
 fi
 
-# 1. Eğer varsa eski cluster'ı temizle
+# Host IP'sini al ve terraform değişkenlerini güncelle
+HOST_IP=$(get_host_ip)
+update_terraform_vars "$HOST_IP"
+
+# 1. Eski cluster'ı temizle
 log "Eski cluster kontrol ediliyor..."
 cd "$TERRAFORM_DIR" || exit 1
 if kind get clusters | grep -q "test-cluster"; then
@@ -52,7 +78,7 @@ if kind get clusters | grep -q "test-cluster"; then
     log "Eski cluster başarıyla silindi"
 fi
 
-# 2. Bağımlılıkları yükleme
+# 2. Bağımlılıkları yükle
 log "Bağımlılıklar yükleniyor..."
 bash "$SCRIPTS_DIR/install-dependencies.sh"
 check_error "Bağımlılıkların kurulumunda hata oluştu"
@@ -61,7 +87,6 @@ check_error "Bağımlılıkların kurulumunda hata oluştu"
 log "Terraform başlatılıyor..."
 terraform init
 check_error "Terraform init başarısız oldu"
-
 log "Terraform apply çalıştırılıyor..."
 terraform apply -auto-approve
 check_error "Terraform apply başarısız oldu"
@@ -89,29 +114,69 @@ while [ $attempt -le $max_attempts ]; do
     sleep 10
 done
 
-# 4. Setup scriptini çalıştırma
+# 4. Setup scriptini çalıştır
 log "Setup script'i çalıştırılıyor..."
 chmod +x "$SCRIPTS_DIR/setup.sh"
 bash "$SCRIPTS_DIR/setup.sh"
 check_error "Setup script'i çalıştırılırken hata oluştu"
 
-# Final kontroller
+# Final kontroller ve bilgi gösterimi
 log "Sistem kontrolleri yapılıyor..."
 kubectl get nodes
 kubectl get pods -A
 
 # Erişim bilgileri
-NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[0].address}')
 echo -e "\n${GREEN}Erişim Bilgileri:${NC}"
-echo -e "${BLUE}PostgreSQL:${NC} $NODE_IP:30432"
-echo -e "${BLUE}Redis:${NC} $NODE_IP:32379"
-echo -e "${BLUE}Jenkins:${NC} http://$NODE_IP:32001"
-echo -e "${BLUE}Application:${NC} http://$NODE_IP:30080"
+echo -e "${BLUE}PostgreSQL:${NC} $HOST_IP:30432"
+echo -e "${BLUE}Redis:${NC} $HOST_IP:32379"
+echo -e "${BLUE}Jenkins:${NC} http://$HOST_IP:32001"
+echo -e "${BLUE}Application:${NC} http://$HOST_IP:30080"
+
+
+
+# Final mesajlar ve kubeconfig ayarları
+echo -e "\n${GREEN}Final Yapılandırma:${NC}"
+echo "----------------------------------------"
+
+# Kubeconfig izinlerini ayarla
+log "Kubeconfig dosyası izinleri ayarlanıyor..."
+chmod 600 ~/.kube/config && \
+log "Kubeconfig izinleri başarıyla ayarlandı (600)"
+
+# Kubeconfig içeriğini göster
+echo -e "\n${BLUE}Kubeconfig Dosya İçeriği:${NC}"
+echo "----------------------------------------"
+cat ~/.kube/config
+echo "----------------------------------------"
+
+# İzinleri göster
+echo -e "\n${BLUE}Kubeconfig Dosya İzinleri:${NC}"
+ls -l ~/.kube/config
+echo "----------------------------------------"
+
 
 # Jenkins şifresi
 echo -e "\n${YELLOW}Jenkins şifresi alınıyor...${NC}"
-JENKINS_POD=$(kubectl get pods -n demo -l app=jenkins -o jsonpath='{.items[0].metadata.name}')
-echo -e "${GREEN}Jenkins admin şifresi:${NC}"
-kubectl exec -n demo $JENKINS_POD -- cat /var/jenkins_home/secrets/initialAdminPassword
+sleep 60  # Jenkins'in tam olarak başlaması için süreyi artıralım
+
+RETRY_COUNT=0
+MAX_RETRIES=5
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if JENKINS_POD=$(kubectl get pods -n demo -l app=jenkins -o jsonpath='{.items[0].metadata.name}' 2>/dev/null) && \
+       kubectl exec -n demo $JENKINS_POD -- cat /var/jenkins_home/secrets/initialAdminPassword >/dev/null 2>&1; then
+        echo -e "${GREEN}Jenkins admin şifresi:${NC}"
+        kubectl exec -n demo $JENKINS_POD -- cat /var/jenkins_home/secrets/initialAdminPassword
+        break
+    else
+        RETRY_COUNT=$((RETRY_COUNT+1))
+        if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+            echo -e "${YELLOW}Jenkins şifresi henüz hazır değil. Jenkins UI üzerinden manuel olarak alabilirsiniz.${NC}"
+        else
+            echo "Jenkins şifresi için bekleniyor... ($RETRY_COUNT/$MAX_RETRIES)"
+            sleep 15
+        fi
+    fi
+done
 
 log "Tüm işlemler başarıyla tamamlandı!"
