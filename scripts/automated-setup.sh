@@ -12,6 +12,46 @@ BASE_DIR="/home/devops/k8s"
 SCRIPTS_DIR="$BASE_DIR/scripts"
 TERRAFORM_DIR="$BASE_DIR/terraform"
 
+# UFW'yi kontrol et ve devre dışı bırak
+log "UFW durumu kontrol ediliyor..."
+if command -v ufw >/dev/null 2>&1; then
+    if sudo ufw status | grep -q "Status: active"; then
+        log "${YELLOW}UFW aktif durumda. Devre dışı bırakılıyor...${NC}"
+        sudo ufw disable
+        check_error "UFW devre dışı bırakılamadı"
+        log "${GREEN}UFW başarıyla devre dışı bırakıldı${NC}"
+    else
+        log "${GREEN}UFW zaten devre dışı${NC}"
+    fi
+else
+    log "${BLUE}UFW sisteminizde yüklü değil${NC}"
+fi
+
+# Temizlik fonksiyonu
+cleanup() {
+    log "Sistem temizliği yapılıyor..."
+    
+    # Kind cluster'ı kontrol et ve sil
+    if kind get clusters | grep -q "test-cluster"; then
+        log "Eski cluster siliniyor..."
+        kind delete clusters test-cluster
+    fi
+    
+    # Docker temizliği
+    log "Docker temizliği yapılıyor..."
+    docker system prune -af --volumes
+    
+    # Terraform temizliği
+    log "Terraform state temizleniyor..."
+    rm -f terraform.tfstate*
+    rm -f .terraform.lock.hcl
+    
+    log "Temizlik tamamlandı"
+}
+
+# Ana script başlangıcında çağır
+cleanup
+
 # IP adresini alma fonksiyonu
 get_host_ip() {
     IP=$(ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '127.0.0.1' | head -n 1)

@@ -9,6 +9,23 @@ echo "📦 Installing Git..."
 sudo apt-get update
 sudo apt-get install -y git
 
+# Kind CLI'nin indirilmesi
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+
+# Çalıştırılabilir hale getirme
+chmod +x ./kind
+
+# Kind CLI'nin sistem PATH'ine taşınması
+sudo mv ./kind /usr/local/bin/kind
+
+# Doğrulama
+if kind --version &> /dev/null; then
+  echo -e "${GREEN}✅ Kind CLI installed successfully!${NC}"
+else
+  echo -e "${RED}❌ Kind CLI installation failed.${NC}"
+  exit 1
+fi
+
 # Docker Installation
 echo "🐳 Installing Docker..."
 sudo apt-get update

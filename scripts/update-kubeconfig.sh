@@ -6,7 +6,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 # IP adresini al ya da varsayılan olarak 192.168.1.50 kullan
-HOST_IP=${1:-"192.168.1.50"}
+HOST_IP=${1:-"192.168.1.103"}
 PORT=${2:-"6444"}
 
 echo -e "${BLUE}Updating kubeconfig with host IP: $HOST_IP and port: $PORT${NC}"
