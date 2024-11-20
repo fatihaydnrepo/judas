@@ -1,10 +1,30 @@
-# Yerel Kubernetes Geliştirme Ortamı
+# 🚀 Yerel Kubernetes Geliştirme Ortamı
 
 ## 📌 Genel Bakış
-Bu proje, Terraform ile yönetilen bir Kind cluster üzerinde PostgreSQL veritabanı, Redis önbellek ve Jenkins CI/CD sistemlerini içeren tam kapsamlı bir yerel Kubernetes geliştirme ortamı sağlar.
+Bu proje, Terraform ile yönetilen bir Kind cluster üzerinde PostgreSQL veritabanı, Redis önbellek ve Jenkins CI/CD sistemlerini içeren kapsamlı bir yerel Kubernetes geliştirme ortamı sunar.
+
+## 🛠️ Hızlı Başlangıç
+
+### Kurulum
+```bash
+# Repository'yi klonla
+apt install git && git clone --branch master https://github.com/fatihaydnrepo/k8s.git
+
+# Kurulum scriptini çalıştır
+cd /home/devops/k8s/scripts && chmod +x automated-setup.sh &&./automated-setup.sh
+```
+
+### Test İşlemleri
+```bash
+# Redis bağlantı testi
+./redis-test.sh
+
+# PostgreSQL bağlantı testi
+./postgresql-test.sh
+```
 
 ## 📁 Proje Yapısı
-```
+```plaintext
 k8s/
 ├── kubernetes/          # Kubernetes manifestoları
 │   ├── app/            # Uygulama konfigürasyonları
@@ -21,42 +41,52 @@ k8s/
 └── terraform/          # Terraform konfigürasyonları
 ```
 
-## 🔌 Port Bilgileri
-| Servis     | Port  | Erişim                          |
-|------------|-------|----------------------------------|
-| API        | 30080 | http://localhost:30080/swagger   |
-| PostgreSQL | 30432 | localhost:30432                  |
-| Redis      | 32379 | localhost:32379                  |
-| Jenkins    | 32001 | http://localhost:32001           |
+## 🔌 Servis Port Bilgileri
 
-## 🚀 Script Açıklamaları
-- `automated-setup.sh`: Tüm kurulum sürecini otomatize eden ana script
-- `get_ip.sh`: Host IP adresini tespit eden yardımcı script
-- `install-dependencies.sh`: Gerekli bağımlılıkları kuran script
-- `postgresql-test.sh`: PostgreSQL bağlantı ve fonksiyon testleri
-- `redis-test.sh`: Redis bağlantı ve fonksiyon testleri
-- `setup.sh`: Kubernetes kurulumlarını yapan script
-- `update-kubeconfig.sh`: Kubeconfig dosyasını güncelleyen script
+| Servis     | Port  | URL                             | Açıklama                    |
+|------------|-------|--------------------------------|----------------------------|
+| API        | 30080 | http://localhost:30080/swagger | REST API ve Swagger UI     |
+| PostgreSQL | 30432 | postgresql://localhost:30432   | PostgreSQL 17.1.0 Veritabanı |
+| Redis      | 32379 | redis://localhost:32379        | Redis 7.0 Önbellek         |
+| Jenkins    | 32001 | http://localhost:32001         | Jenkins CI/CD Arayüzü      |
+
+## 🚀 Script Detayları
+
+| Script | Açıklama |
+|--------|----------|
+| `automated-setup.sh` | Ana kurulum scripti - Tüm ortamı otomatik yapılandırır |
+| `get_ip.sh` | Host IP tespiti için yardımcı script |
+| `install-dependencies.sh` | Sistem bağımlılıklarını kurar (Docker, Kind, Kubectl, vb.) |
+| `postgresql-test.sh` | PostgreSQL bağlantı ve fonksiyon testleri yapar |
+| `redis-test.sh` | Redis bağlantı ve fonksiyon testleri yapar |
+| `setup.sh` | Kubernetes servislerini ve uygulamaları kurar |
+| `update-kubeconfig.sh` | Kubeconfig yapılandırmasını günceller |
 
 ## ⚙️ Kullanılan Teknolojiler
-- Kind Kubernetes
-- PostgreSQL 17.1.0
-- Redis 7.0
-- Jenkins
-- .NET Core API
-- Helm v3
-- Terraform
 
-## 🌐 Erişim Bilgileri
-- API: http://localhost:30080/swagger
-- Jenkins: http://localhost:32001
-- PostgreSQL: localhost:30432
-- Redis: localhost:32379
+- **Konteynerizasyon & Orkestrasyon**
+  - Kind Kubernetes
+  - Docker
+  - Helm v3
 
-## 🔐 Güvenlik
-Tüm şifreler ve hassas bilgiler Kubernetes secret'ları olarak yönetilmektedir.
+- **Veritabanları & Önbellek**
+  - PostgreSQL 17.1.0
+  - Redis 7.0
 
-Sırası ile uygulanacak komutlar 
-- sudo su && apt install git && git clone --branch master https://github.com/fatihaydnrepo/k8s.git
-- sudo systemctl restart docker && sleep 5 && sudo chmod 666 /var/run/docker.sock && cd /home/devops/k8s/terraform && rm -rf .terraform* terraform.tfstate* .terraform.lock.hcl && cd /home/devops/k8s/scripts && chmod +x automated-setup.sh && ./automated-setup.sh 
+- **CI/CD & Altyapı**
+  - Jenkins
+  - Terraform
+
+- **Uygulama**
+  - .NET Core API
+  - Swagger UI
+
+## 🔐 Güvenlik Notları
+
+- Tüm hassas bilgiler Kubernetes Secrets içinde şifrelenmiş olarak saklanır
+- Servis portları yalnızca localhost üzerinden erişilebilir
+- Jenkins admin şifresi ilk kurulumda otomatik oluşturulur
+- Veritabanı ve Redis kimlik bilgileri güvenli bir şekilde yapılandırılır
+
+
 
