@@ -10,7 +10,7 @@ NC='\033[0m'
 BASE_DIR="/home/devops/k8s"
 SCRIPTS_DIR="$BASE_DIR/scripts"
 TERRAFORM_DIR="$BASE_DIR/terraform"
-
+export DEBIAN_FRONTEND=noninteractive
 # UFW'yi kontrol et ve devre dışı bırak
 log "UFW durumu kontrol ediliyor..."
 if command -v ufw >/dev/null 2>&1; then
