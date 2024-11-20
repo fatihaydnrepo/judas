@@ -28,6 +28,7 @@ GET all_products
 
 kubectl get secret postgres-postgresql -n demo -o jsonpath='{.data.postgres-password}' | base64 -d
 psql -U postgres
+\c containers 
 SELECT * FROM "Products" 
 ORDER BY "Id" DESC 
 LIMIT 10;
