@@ -61,16 +61,32 @@ cleanup() {
 
     log "Docker socket izinleri ayarlanıyor..."
     sudo chmod 666 /var/run/docker.sock
-
-    # Terraform temizliği
-    log "Terraform state temizleniyor..."
-    cd "$TERRAFORM_DIR" || exit 1
-    rm -f terraform.tfstate*
-    rm -f .terraform.lock.hcl
-    rm -rf .terraform* 2>/dev/null || true
-    rm -rf .terraform
-    cd - || exit 1
-
+    local terraform_dir="$1"
+    
+    if [ ! -d "$terraform_dir" ]; then
+        log "${RED}Terraform dizini bulunamadı: $terraform_dir${NC}"
+        return 1
+    fi
+    
+    log "Terraform temizliği başlıyor..."
+    
+    # Mevcut konumu kaydet
+    local current_dir=$(pwd)
+    
+    # Terraform dizinine geç
+    cd "$terraform_dir" || {
+        log "${RED}Terraform dizinine geçilemedi${NC}"
+        return 1
+    }
+    
+    # Dosyaları temizle
+    find . -name "terraform.tfstate*" -type f -delete
+    find . -name ".terraform.lock.hcl" -type f -delete
+    find . -name ".terraform" -type d -exec rm -rf {} +
+    find . -name ".terraform*" -delete
+    
+    # Orijinal dizine geri dön
+    cd "$current_dir"
     # Ek bekleme süresi
     log "Sistem kaynaklarının serbest kalması için bekleniyor..."
     sleep 15
