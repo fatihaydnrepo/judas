@@ -23,6 +23,7 @@ cd /home/devops/k8s/scripts && chmod +x automated-setup.sh &&./automated-setup.s
 ./postgresql-test.sh
 
 kubectl get secret redis -n demo -o jsonpath='{.data.redis-password}' | base64 -d
+redis-cli -h redis-master.demo.svc.cluster.local -p 6379
 AUTH default *şifre*
 GET all_products
 
