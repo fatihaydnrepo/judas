@@ -107,7 +107,7 @@ bash "$SCRIPTS_DIR/install-dependencies.sh"
 check_error "Bağımlılıkların kurulumunda hata oluştu"
 
 log "Docker yeniden başlatılıyor ve Terraform temizleniyor..."
-sudo systemctl restart docker && sleep 10 && sudo chmod 666 /var/run/docker.sock && cd /home/devops/k8s/terraform && rm -rf .terraform* terraform.tfstate* .terraform.lock.hcl && cd /home/k8s/scripts
+sudo systemctl restart docker && sleep 5 && sudo chmod 666 /var/run/docker.sock && cd /home/devops/k8s/terraform && rm -rf .terraform* terraform.tfstate* .terraform.lock.hcl && terraform init && terraform plan && terraform apply -auto-approve
 check_error "Docker yeniden başlatma ve Terraform temizliği başarısız oldu"
 
 # 3. Terraform ile altyapı kurulumu
