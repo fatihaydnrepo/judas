@@ -35,64 +35,6 @@ chmod +x $SCRIPTS_DIR/setup.sh
 chmod +x $SCRIPTS_DIR/update-kubeconfig.sh
 chmod +x $SCRIPTS_DIR/automated-setup.sh
 
-# Temizlik fonksiyonu
-cleanup() {
-    log "Sistem temizliği yapılıyor..."
-
-    # Kind cluster'ı kontrol et ve sil
-    if kind get clusters 2>/dev/null | grep -q "test-cluster"; then
-        log "Eski cluster siliniyor..."
-        kind delete clusters test-cluster
-        kind delete clusters --all 2>/dev/null || true
-        sleep 10  # Cluster'ın tamamen silinmesi için bekle
-    fi
-
-    # Kubeconfig temizliği
-    log "Kubeconfig temizliği yapılıyor..."
-    rm -f ~/.kube/config 2>/dev/null || true
-
-    # Docker temizliği
-    log "Docker temizliği yapılıyor..."
-    docker system prune -af --volumes
-
-    log "Docker servisi yeniden başlatılıyor..."
-    sudo systemctl restart docker
-    wait_for_docker || exit 1
-
-    log "Docker socket izinleri ayarlanıyor..."
-    sudo chmod 666 /var/run/docker.sock
-    local terraform_dir="$1"
-    
-    if [ ! -d "$terraform_dir" ]; then
-        log "${RED}Terraform dizini bulunamadı: $terraform_dir${NC}"
-        return 1
-    fi
-    
-    log "Terraform temizliği başlıyor..."
-    
-    # Mevcut konumu kaydet
-    local current_dir=$(pwd)
-    
-    # Terraform dizinine geç
-    cd "$terraform_dir" || {
-        log "${RED}Terraform dizinine geçilemedi${NC}"
-        return 1
-    }
-    
-    # Dosyaları temizle
-    find . -name "terraform.tfstate*" -type f -delete
-    find . -name ".terraform.lock.hcl" -type f -delete
-    find . -name ".terraform" -type d -exec rm -rf {} +
-    find . -name ".terraform*" -delete
-    
-    # Orijinal dizine geri dön
-    cd "$current_dir"
-    # Ek bekleme süresi
-    log "Sistem kaynaklarının serbest kalması için bekleniyor..."
-    sleep 15
-
-    log "Temizlik tamamlandı"
-}
 # IP adresini alma fonksiyonu
 get_host_ip() {
     IP=$(ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '127.0.0.1' | head -n 1)
