@@ -1,7 +1,6 @@
 locals {
   # Base64 encoded şifreyi decode et
   encoded_password = "Z0R5T3pRSUM1TA=="
-  decoded_password = base64decode(local.encoded_password)
 
   db_connection = "Host=postgres-postgresql.demo.svc.cluster.local;Database=containers;Username=postgres;Password=Z0R5T3pRSUM1TA=="
   redis_connection = "redis-master.demo.svc.cluster.local:6379,password=Z0R5T3pRSUM1TA=="
