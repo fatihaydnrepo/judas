@@ -61,4 +61,3 @@ Sırası ile uygulanacak komutlar
 - git clone --branch master https://github.com/fatihaydnrepo/k8s.git
 - cd /home/devops/k8s/terraform && rm -rf .terraform* terraform.tfstate* .terraform.lock.hcl && cd /home/devops/k8s/scripts && chmod +x automated-setup.sh && ./automated-setup.sh 
 
-- chmod +x automated-setup.sh && ./automated-setup.sh 
