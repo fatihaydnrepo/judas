@@ -21,6 +21,18 @@ cd /home/devops/k8s/scripts && chmod +x automated-setup.sh &&./automated-setup.s
 
 # PostgreSQL bağlantı testi
 ./postgresql-test.sh
+
+kubectl get secret redis -n demo -o jsonpath='{.data.redis-password}' | base64 -d
+AUTH default *şifre*
+GET all_products
+
+kubectl get secret postgres-postgresql -n demo -o jsonpath='{.data.postgres-password}' | base64 -d
+psql -U postgres
+SELECT * FROM "Products" 
+ORDER BY "Id" DESC 
+LIMIT 10;
+ya da
+SELECT * FROM public."Products" ORDER BY "Id" DESC LIMIT 10;
 ```
 
 ## 📁 Proje Yapısı
