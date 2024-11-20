@@ -59,5 +59,5 @@ Tüm şifreler ve hassas bilgiler Kubernetes secret'ları olarak yönetilmektedi
 Sırası ile uygulanacak komutlar 
 - sudo su && apt install git && apt install net-tools && ifconfig
 - git clone --branch master https://github.com/fatihaydnrepo/k8s.git
-- cd /home/devops/k8s/terraform && rm -rf .terraform* terraform.tfstate* .terraform.lock.hcl && cd /home/devops/k8s/scripts && chmod +x automated-setup.sh && ./automated-setup.sh 
+- sudo systemctl restart docker && sleep 5 && sudo chmod 666 /var/run/docker.sock && cd /home/devops/k8s/terraform && rm -rf .terraform* terraform.tfstate* .terraform.lock.hcl && cd /home/devops/k8s/scripts && chmod +x automated-setup.sh && ./automated-setup.sh 
 
