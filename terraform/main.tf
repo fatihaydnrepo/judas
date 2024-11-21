@@ -12,7 +12,6 @@ terraform {
 }
 
 provider "kind" {}
-
 provider "kubernetes" {
   host                = "https://${var.host_ip}:${var.api_port}"
   insecure            = true
@@ -26,9 +25,24 @@ data "local_file" "kubeconfig" {
   filename   = pathexpand("~/.kube/config")
 }
 
+# Dizinleri oluştur
+resource "null_resource" "create_data_dirs" {
+  provisioner "local-exec" {
+    command = <<-EOT
+      mkdir -p /home/devops/k8s/data/postgres
+      mkdir -p /home/devops/k8s/data/redis
+      chmod 777 /home/devops/k8s/data/postgres
+      chmod 777 /home/devops/k8s/data/redis
+    EOT
+  }
+}
+
+# Kind cluster oluştur
 resource "kind_cluster" "default" {
+  depends_on = [null_resource.create_data_dirs]
   name           = var.cluster_name
   wait_for_ready = true
+  
   kind_config {
     kind        = "Cluster"
     api_version = "kind.x-k8s.io/v1alpha4"
@@ -37,7 +51,7 @@ resource "kind_cluster" "default" {
       api_server_address = var.host_ip
       api_server_port    = var.api_port
     }
-
+    
     node {
       role = "control-plane"
       
@@ -51,13 +65,13 @@ resource "kind_cluster" "default" {
         content {
           container_port = extra_port_mappings.value.container_port
           host_port     = extra_port_mappings.value.host_port
-          listen_address = var.host_ip  # Her port için dinleme adresi
+          listen_address = var.host_ip
         }
       }
-
+      
       extra_mounts {
-        host_path      = "/tmp/postgresql-data"
-        container_path = "/bitnami/postgresql"
+        host_path      = "/home/devops/k8s/data/postgres"
+        container_path = "/var/local-path-provisioner"
       }
     }
   }
