@@ -1,7 +1,7 @@
 replicaCount: 1
 image:
   repository: jenkins/jenkins
-  tag: 2.414.2-lts
+  tag: 2.414.3-tls
   pullPolicy: IfNotPresent
 service:
   type: NodePort
