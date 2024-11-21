@@ -1,30 +1,32 @@
 #!/bin/bash
-
-# Renkli çıktılar için
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-
-HOST_IP=${1:-"192.168.1.103"}
+# IP parametresi kontrolü
+HOST_IP=${1:-$(ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '127.0.0.1' | head -n 1)}
 PORT=${2:-"6444"}
 
 echo -e "${BLUE}Updating kubeconfig with host IP: $HOST_IP and port: $PORT${NC}"
 
-# Geçici dosyayı oluştur
-kind get kubeconfig --name test-cluster > /tmp/kube_temp
+# Yedek oluştur
+cp ~/.kube/config ~/.kube/config.backup 2>/dev/null || true
 
-# IP ve port'u güncelle
-cat /tmp/kube_temp | \
-    sed "s|server: https://.*|server: https://$HOST_IP:$PORT|g" | \
-    sed 's|certificate-authority-data:.*|insecure-skip-tls-verify: true|g' > /tmp/kube_final
+# Kind cluster kubeconfig'ini al ve direkt güncelle
+kind get kubeconfig --name test-cluster | \
+    sed -E "s|server: https://[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+|server: https://${HOST_IP}:${PORT}|g" | \
+    sed 's|certificate-authority-data:.*|insecure-skip-tls-verify: true|g' > ~/.kube/config
 
-# Kubeconfig'i güncelle
-mkdir -p ~/.kube
-cp /tmp/kube_final ~/.kube/config
+# İzinleri ayarla
 chmod 600 ~/.kube/config
 
-# Geçici dosyaları temizle
-rm /tmp/kube_temp /tmp/kube_final
-
-echo -e "${GREEN}Kubeconfig updated successfully${NC}"
+# Doğrulama
+if grep -q "server: https://${HOST_IP}:${PORT}" ~/.kube/config; then
+    echo -e "${GREEN}Kubeconfig updated successfully${NC}"
+    echo "New server configuration:"
+    grep "server: " ~/.kube/config
+else
+    echo "Update failed. Restoring backup..."
+    [ -f ~/.kube/config.backup ] && cp ~/.kube/config.backup ~/.kube/config
+    exit 1
+fi
