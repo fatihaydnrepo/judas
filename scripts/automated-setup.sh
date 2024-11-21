@@ -118,6 +118,19 @@ log "Terraform apply çalıştırılıyor..."
 terraform apply -auto-approve
 check_error "Terraform apply başarısız oldu"
 
+# Hemen Terraform çıktısından IP adresini alalım
+CURRENT_IP=$(terraform output -raw api_endpoint | sed 's|https://\(.*\):.*|\1|')
+log "Terraform'dan alınan IP: $CURRENT_IP"
+
+# Kubeconfig'i yeni IP ile güncelle
+log "Kubeconfig güncelleniyor..."
+bash "$SCRIPTS_DIR/update-kubeconfig.sh" "$CURRENT_IP"
+check_error "Kubeconfig güncellenemedi"
+
+# Biraz bekleyelim
+log "API'nin hazır olması için bekleniyor..."
+sleep 20
+
 # Cluster'ın hazır olmasını bekle
 log "Cluster hazırlığı için 30 saniye bekleniyor..."
 sleep 30
