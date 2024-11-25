@@ -1,8 +1,8 @@
 replicaCount: 1
 image:
   repository: jenkins/jenkins
-  tag: 2.414.2-tls
-  pullPolicy: IfNotPresent
+  tag: lts
+  pullPolicy: Always
 service:
   type: NodePort
   port: 8080
