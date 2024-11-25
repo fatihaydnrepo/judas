@@ -1,0 +1,88 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = 'dotnet-app:latest'
+        NAMESPACE = 'demo'
+        HELM_RELEASE = 'demo-app'
+        DOCKER_BUILDKIT = '1'
+        K8S_PATH = '/home/devops/k8s/kubernetes'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build & Test') {
+            steps {
+                sh '''
+                    dotnet restore
+                    dotnet build -c Release
+                    dotnet test --no-restore --verbosity normal
+                '''
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                script {
+                    sh "docker build -t ${DOCKER_IMAGE} ."
+                }
+            }
+        }
+
+        stage('Load to Kind') {
+            steps {
+                sh "kind load docker-image ${DOCKER_IMAGE} --name test-cluster"
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh """
+                    helm upgrade ${HELM_RELEASE} ${K8S_PATH}/helm-charts/app \
+                    --install \
+                    --namespace=${NAMESPACE} \
+                    --create-namespace \
+                    --set image.tag=latest \
+                    --wait \
+                    --timeout 5m
+                """
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                sh """
+                    kubectl rollout status deployment/${HELM_RELEASE} -n ${NAMESPACE}
+                    kubectl get pods -l app.kubernetes.io/name=${HELM_RELEASE} -n ${NAMESPACE}
+                """
+            }
+        }
+
+        stage('Test Services') {
+            steps {
+                sh '''
+                    ./scripts/postgresql-test.sh
+                    ./scripts/redis-test.sh
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+            echo 'Application is deployed and ready.'
+        }
+        failure {
+            echo 'Pipeline failed! Check the logs above for details.'
+        }
+        always {
+            cleanWs()
+        }
+    }
+}
