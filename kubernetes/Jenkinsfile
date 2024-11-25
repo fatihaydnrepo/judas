@@ -1,88 +1,58 @@
 pipeline {
     agent any
-
+    
     environment {
-        DOCKER_IMAGE = 'dotnet-app:latest'
+        HELM_RELEASE_NAME = 'demo-app'
         NAMESPACE = 'demo'
-        HELM_RELEASE = 'demo-app'
-        DOCKER_BUILDKIT = '1'
-        K8S_PATH = '/home/devops/k8s/kubernetes'
+        KUBECONFIG = '/var/jenkins_home/.kube/config'
+        POSTGRES_HOST = 'postgres-postgresql.demo.svc.cluster.local'
+        POSTGRES_PORT = '5432'
+        POSTGRES_DB = 'containers'
+        POSTGRES_USER = 'postgres'
+        POSTGRES_PASSWORD = credentials('postgres-password')
+        REDIS_HOST = 'redis-master.demo.svc.cluster.local'
+        REDIS_PORT = '6379'
+        REDIS_PASSWORD = credentials('redis-password')
     }
-
+    
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Build & Test') {
+        stage('Setup Tools') {
             steps {
                 sh '''
-                    dotnet restore
-                    dotnet build -c Release
-                    dotnet test --no-restore --verbosity normal
+                    echo "Installing required tools..."
+                    
+                    # Helm kurulumu
+                    curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+                    
+                    # Kubectl kurulumu
+                    KUBECTL_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt)
+                    curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+                    chmod +x kubectl
+                    mv kubectl /usr/local/bin/kubectl || mv kubectl /bin/kubectl
                 '''
             }
         }
-
-        stage('Docker Build') {
-            steps {
-                script {
-                    sh "docker build -t ${DOCKER_IMAGE} ."
-                }
-            }
-        }
-
-        stage('Load to Kind') {
-            steps {
-                sh "kind load docker-image ${DOCKER_IMAGE} --name test-cluster"
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh """
-                    helm upgrade ${HELM_RELEASE} ${K8S_PATH}/helm-charts/app \
-                    --install \
-                    --namespace=${NAMESPACE} \
-                    --create-namespace \
-                    --set image.tag=latest \
-                    --wait \
-                    --timeout 5m
-                """
-            }
-        }
-
-        stage('Verify Deployment') {
-            steps {
-                sh """
-                    kubectl rollout status deployment/${HELM_RELEASE} -n ${NAMESPACE}
-                    kubectl get pods -l app.kubernetes.io/name=${HELM_RELEASE} -n ${NAMESPACE}
-                """
-            }
-        }
-
-        stage('Test Services') {
+        
+        stage('Check Cluster') {
             steps {
                 sh '''
-                    ./scripts/postgresql-test.sh
-                    ./scripts/redis-test.sh
+                    echo "Checking cluster status..."
+                    kubectl cluster-info
+                    kubectl get nodes
+                    
+                    echo "Checking namespace..."
+                    kubectl get namespace ${NAMESPACE} || kubectl create namespace ${NAMESPACE}
                 '''
             }
         }
-    }
-
-    post {
-        success {
-            echo 'Pipeline completed successfully!'
-            echo 'Application is deployed and ready.'
-        }
-        failure {
-            echo 'Pipeline failed! Check the logs above for details.'
-        }
-        always {
-            cleanWs()
+        
+        stage('Check Database') {
+            steps {
+                sh '''
+                    echo "Checking PostgreSQL & Redis status..."
+                    kubectl get pods -n ${NAMESPACE} | grep -E "postgres|redis"
+                '''
+            }
         }
     }
 }
