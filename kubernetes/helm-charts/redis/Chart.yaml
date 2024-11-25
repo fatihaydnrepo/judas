@@ -1,0 +1,8 @@
+apiVersion: v2
+name: redis
+description: Redis Helm Chart
+version: 0.1.0
+dependencies:
+  - name: redis
+    version: 18.1.0
+    repository: https://charts.bitnami.com/bitnami
