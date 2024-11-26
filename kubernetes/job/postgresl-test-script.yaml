@@ -25,7 +25,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: postgres-postgresql
-                  key: postgres-password  # Bu satırı değiştirdik, PGPASSWORD yerine postgres-password
+                  key: postgres-password  
             command: ["/bin/bash"]
             args:
             - "-c"
