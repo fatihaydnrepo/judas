@@ -14,16 +14,16 @@ spec:
             image: bitnami/postgresql:latest
             env:
               - name: PGUSER
-                value: "postgres" # PostgreSQL kullanıcısı (Default)
+                value: "postgres"
               - name: PGPASSWORD
                 valueFrom:
                   secretKeyRef:
                     name: postgres-postgresql
-                    key: postgres-password # Secret içerisindeki şifre
+                    key: postgres-password
               - name: PGHOST
-                value: "postgres-postgresql" # PostgreSQL servis adı
+                value: "postgres-postgresql"
               - name: PGDATABASE
-                value: "containers" # Backup alınacak veritabanı
+                value: "containers" 
             command:
               - /bin/bash
               - -c
