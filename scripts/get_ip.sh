@@ -61,7 +61,7 @@ resource "kind_cluster" "default" {
 EOF
 }
 
-# Kubernetes kubeconfig güncelleme scripti
+
 create_kubeconfig_script() {
     local ip=$1
     cat > update-kubeconfig.sh <<EOF
