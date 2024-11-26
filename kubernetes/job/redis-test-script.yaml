@@ -4,7 +4,7 @@ metadata:
   name: redis-test
   namespace: demo
 spec:
-  schedule: "*/5 * * * *"  # Her 5 dakikada bir çalışır
+  schedule: "*/60 * * * *"  
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 1
   jobTemplate:
