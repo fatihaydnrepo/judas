@@ -1,6 +1,5 @@
 locals {
-  #Kubernetes secret data field'ı otomatik encode edecek
-  redis_password = base64decode("Z0R5T3pRSUM1TA==")  # Decode edilmiş hali
+  redis_password = base64decode("Z0R5T3pRSUM1TA==")  
   db_connection = "Host=postgres-postgresql.demo.svc.cluster.local;Database=containers;Username=postgres;Password=${base64decode("Z0R5T3pRSUM1TA==")}"
   redis_connection = "redis-master.demo.svc.cluster.local:6379,password=${base64decode("Z0R5T3pRSUM1TA==")}"
 }
