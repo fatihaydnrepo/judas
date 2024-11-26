@@ -29,6 +29,9 @@ helm install redis bitnami/redis -f values.yaml -n demo
 echo -e "${GREEN}Installing Jenkins...${NC}"
 cd ../jenkins
 helm install jenkins . -f values.yaml -n demo
+cd /home/devops/k8s/kubernetes/helm-charts/jenkins/templates
+kubectl apply -f  jenkins-sa.yaml -n demo
+
 
 # Apply Jobs
 echo -e "${GREEN}Creating Jobs...${NC}"
