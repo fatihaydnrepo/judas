@@ -56,7 +56,6 @@ resource "kind_cluster" "default" {
       api_server_address = var.host_ip
       api_server_port = var.api_server_port
     }
-    # ... diğer yapılandırmalar
   }
 }
 EOF
