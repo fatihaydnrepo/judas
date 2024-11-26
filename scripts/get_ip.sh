@@ -1,7 +1,7 @@
 #!/bin/bash
-# get_ip.sh - IP adresini otomatik alma ve konfigürasyon scripti
 
-# IP adresini alma fonksiyonu
+
+
 get_host_ip() {
     # Linux'ta birincil IP adresini al
     IP=$(ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '127.0.0.1' | head -n 1)
