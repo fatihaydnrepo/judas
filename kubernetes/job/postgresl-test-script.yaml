@@ -4,7 +4,7 @@ metadata:
   name: test-postgres-cronjob
   namespace: demo
 spec:
-  schedule: "*/30 * * * *"  # Her 30 dakikada bir çalışır
+  schedule: "*/59 * * * *"  
   jobTemplate:
     spec:
       template:
