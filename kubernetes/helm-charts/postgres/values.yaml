@@ -1,0 +1,11 @@
+auth:
+  existingSecret: "postgres-postgresql"
+  secretKeys:
+    adminPasswordKey: postgres-password
+  database: "containers"
+
+primary:
+  service:
+    type: NodePort
+    nodePorts:
+      postgresql: 30432

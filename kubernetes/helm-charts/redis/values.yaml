@@ -1,0 +1,9 @@
+auth:
+  existingSecret: "redis"
+  existingSecretPasswordKey: "redis-password"
+
+master:
+  service:
+    type: NodePort
+    nodePorts:
+      redis: "32379"
