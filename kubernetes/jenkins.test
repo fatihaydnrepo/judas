@@ -1,0 +1,26 @@
+pipeline {
+    agent {
+        kubernetes {
+            yaml '''
+                apiVersion: v1
+                kind: Pod
+                spec:
+                  containers:
+                  - name: shell
+                    image: busybox
+                    command:
+                    - cat
+                    tty: true
+            '''
+        }
+    }
+    stages {
+        stage('Test') {
+            steps {
+                container('shell') {
+                    sh 'echo "Hello from Kubernetes!"'
+                }
+            }
+        }
+    }
+}
