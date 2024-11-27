@@ -17,7 +17,7 @@ var postgresBuilder = new NpgsqlConnectionStringBuilder
     Database = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? "containers",
     Username = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? "postgres",
     Password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD"),
-    IncludeErrorDetail = true  // Hata detaylarını görmek için ekledik
+    IncludeErrorDetail = true  
 };
 
 builder.Services.AddDbContext<AppDbContext>(options => 
