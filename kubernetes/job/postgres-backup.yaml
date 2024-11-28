@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: demo
+spec:
+  schedule: "0 3 * * *" # Her gün saat 03:00'te çalışır
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: postgres-backup
+            image: bitnami/postgresql:latest
+            env:
+              - name: PGUSER
+                value: "postgres"
+              - name: PGPASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-postgresql
+                    key: postgres-password
+              - name: PGHOST
+                value: "postgres-postgresql"
+              - name: PGDATABASE
+                value: "containers" 
+            command:
+              - /bin/bash
+              - -c
+              - |
+                echo "Starting PostgreSQL backup..." && \
+                mkdir -p /backups && \
+                pg_dump -h $PGHOST -U $PGUSER -d $PGDATABASE > /backups/backup-$(date +\%Y\%m\%d).sql && \
+                echo "Backup completed successfully: /backups/backup-$(date +\%Y\%m\%d).sql" || \
+                echo "Backup failed" >&2
+            volumeMounts:
+              - name: backup-volume
+                mountPath: /backups
+          restartPolicy: OnFailure
+          volumes:
+            - name: backup-volume
+              persistentVolumeClaim:
+                claimName: data-postgres-postgresql-0

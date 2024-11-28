@@ -1,0 +1,82 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: redis-test
+  namespace: demo
+spec:
+  schedule: "*/60 * * * *"  
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: redis-tester
+            image: bitnami/redis:latest
+            env:
+              - name: REDIS_HOST
+                value: "redis-master.demo.svc.cluster.local"
+              - name: REDIS_PORT
+                value: "6379"
+              - name: REDIS_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: redis
+                    key: redis-password
+            command:
+              - /bin/bash
+              - -c
+              - |
+                echo "Starting Redis Health Check - $(date)"
+                
+                # PING testi
+                echo "Testing PING..."
+                if redis-cli -h $REDIS_HOST -p $REDIS_PORT -a "$REDIS_PASSWORD" PING | grep -q "PONG"; then
+                    echo "✅ PING test successful"
+                else
+                    echo "❌ PING test failed"
+                    exit 1
+                fi
+
+                # Write/Read/Delete testi
+                echo "Testing Write/Read/Delete operations..."
+                TEST_VALUE="Test-$(date +%s)"
+                
+                # Write test
+                if redis-cli -h $REDIS_HOST -p $REDIS_PORT -a "$REDIS_PASSWORD" SET test-key "$TEST_VALUE" | grep -q "OK"; then
+                    echo "✅ Write test successful"
+                else
+                    echo "❌ Write test failed"
+                    exit 1
+                fi
+
+                # Read test
+                READ_VALUE=$(redis-cli -h $REDIS_HOST -p $REDIS_PORT -a "$REDIS_PASSWORD" GET test-key)
+                if [ "$READ_VALUE" = "$TEST_VALUE" ]; then
+                    echo "✅ Read test successful"
+                else
+                    echo "❌ Read test failed"
+                    exit 1
+                fi
+
+                # Delete test
+                if redis-cli -h $REDIS_HOST -p $REDIS_PORT -a "$REDIS_PASSWORD" DEL test-key | grep -q "1"; then
+                    echo "✅ Delete test successful"
+                else
+                    echo "❌ Delete test failed"
+                    exit 1
+                fi
+
+                # Cache keys kontrol
+                echo "Checking cache keys..."
+                KEYS=$(redis-cli -h $REDIS_HOST -p $REDIS_PORT -a "$REDIS_PASSWORD" KEYS "*")
+                echo "Current cache keys:"
+                echo "$KEYS"
+                
+                # Memory kullanımı kontrolü
+                echo "Checking memory usage..."
+                redis-cli -h $REDIS_HOST -p $REDIS_PORT -a "$REDIS_PASSWORD" INFO memory | grep "used_memory_human"
+
+                echo "Redis Health Check completed successfully - $(date)"
+          restartPolicy: Never
