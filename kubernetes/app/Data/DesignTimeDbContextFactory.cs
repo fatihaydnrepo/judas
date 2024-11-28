@@ -1,14 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace DemoApp.Data;
-
-public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
+namespace DemoApp.Data
 {
-    public AppDbContext CreateDbContext(string[] args)
+    public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
-        var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-        optionsBuilder.UseNpgsql("Host=postgres-postgresql;Port=5432;Database=containers;Username=postgres;Password=devops");
+        public AppDbContext CreateDbContext(string[] args)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+            optionsBuilder.UseNpgsql("Host=postgres-postgresql;Port=5432;Database=containers;Username=postgres;Password=devops");
 
-        return new AppDbContext(optionsBuilder.Options);
+            return new AppDbContext(optionsBuilder.Options);
+        }
     }
+}
